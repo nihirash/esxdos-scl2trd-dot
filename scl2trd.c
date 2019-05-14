@@ -12,6 +12,8 @@ int iStream;
 int oStream;
 int i;
 unsigned char count;
+unsigned int totalFreeSect = 2544;
+int isFull = 0;
 
 static void cleanBuff() 
 {
@@ -21,10 +23,16 @@ static void cleanBuff()
 void writeData()
 {
     i = esx_f_read(iStream, &buff, 256);
-    while (i > 4) 
+    while (i == 256) // Only sectors info 
     {
         esx_f_write(oStream, &buff, i);
         i = esx_f_read(iStream, &buff, 256);
+    }
+
+    if (isFull) {
+        cleanBuff();
+        for (i=0;i<totalFreeSect;i++)
+            esx_f_write(oStream, &buff, 256);
     }
 }
 
@@ -34,6 +42,12 @@ void writeInfo()
     buff[0xe4] = count;
     buff[0xe1] = freeSec;
     buff[0xe2] = freeTrack;
+    
+    if (isFull) {
+        buff[0xe6] = totalFreeSect / 256;
+        buff[0xe5] = totalFreeSect & 255;
+    }
+    
     buff[0xe7] = 0x10;
     buff[0xea] = 32;
     buff[0xf5] = 's';
@@ -57,6 +71,7 @@ void writeCatalog()
         buff[14] = freeSec;
         buff[15] = freeTrack;
         freeSec += buff[0xd];
+        totalFreeSect -= (int) buff[0xd];
         freeTrack += freeSec / 16;
         freeSec = freeSec % 16;
         esx_f_write(oStream, &buff, 16);
@@ -84,13 +99,21 @@ void openFile()
 
 int main(int argc, char **argv)
 {
-    printf("\nscl2trd-dot by nihirash v.0.0.1\n");
+    printf("\nscl2trd-dot by nihirash v.1.0.0\n");
     if (argc < 2) {
-        printf("\nUsage .scl2trd filename.scl\n");
+        printf("\nUsage .scl2trd [f] filename.scl\n\nf is optional - make full TRD\n\nexample:\n.scl2trd 1.scl   -- cutted TRD\n.scl2trd f 1.scl -- full TRD\n\n");
         return 0;
     }
 
-    fileName = argv[1];
+    if (argv[1][0] == 'f') {
+        printf("\nCreating full TRD!\n");
+        isFull = 1;
+        fileName = argv[2];
+    } else {
+        isFull = 0;
+        fileName = argv[1];
+    }
+    
     openFile();
     writeCatalog();
     writeInfo();
