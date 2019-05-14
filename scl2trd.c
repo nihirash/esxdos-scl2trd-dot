@@ -49,7 +49,6 @@ void writeInfo()
     }
     
     buff[0xe7] = 0x10;
-    buff[0xea] = 32;
     buff[0xf5] = 's';
     buff[0xf6] = 'c';
     buff[0xf7] = 'l';
