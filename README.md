@@ -34,4 +34,4 @@ You may donate me via [PayPal](https://www.paypal.me/pinport).
 
 ## Legals
 
-Copyright (L) 2019 Alexander Sharikhin aka Nihirash(anihirash@gmail.com)
+Copyright (C) 2019 Alexander Sharikhin aka Nihirash(anihirash@gmail.com)
